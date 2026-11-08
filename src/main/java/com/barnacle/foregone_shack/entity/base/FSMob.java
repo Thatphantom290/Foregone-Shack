@@ -1,6 +1,5 @@
 package com.barnacle.foregone_shack.entity.base;
 
-import com.barnacle.foregone_shack.entity.variant.FSVariantMob;
 import com.platypushasnohat.sinew.entity.base.AnimatedTamableAnimal;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -10,11 +9,10 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
 
-public abstract class FSMob extends AnimatedTamableAnimal implements FSVariantMob {
+public abstract class FSMob extends AnimatedTamableAnimal {
 
     protected static final EntityDataAccessor<Integer> IDLE_STATE = SynchedEntityData.defineId(FSMob.class, EntityDataSerializers.INT);
     protected static final EntityDataAccessor<Boolean> RUNNING = SynchedEntityData.defineId(FSMob.class, EntityDataSerializers.BOOLEAN);
-    private static final EntityDataAccessor<String> VARIANT = SynchedEntityData.defineId(FSMob.class, EntityDataSerializers.STRING);
 
     protected int idleAnimationCooldown;
 
@@ -25,29 +23,18 @@ public abstract class FSMob extends AnimatedTamableAnimal implements FSVariantMo
     @Override
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
         super.defineSynchedData(builder);
-        builder.define(VARIANT, this.defaultVariant().location().toString());
         builder.define(IDLE_STATE, 0);
+        builder.define(RUNNING, false);
     }
 
     @Override
     public void addAdditionalSaveData(CompoundTag compoundTag) {
         super.addAdditionalSaveData(compoundTag);
-        this.saveVariant(compoundTag);
     }
 
     @Override
     public void readAdditionalSaveData(CompoundTag compoundTag) {
         super.readAdditionalSaveData(compoundTag);
-        this.loadVariant(compoundTag);
-    }
-
-    @Override
-    public String getVariantRawId() {
-        return this.entityData.get(VARIANT);
-    }
-    @Override
-    public void setVariantRawId(String id) {
-        this.entityData.set(VARIANT, id);
     }
 
     public boolean isRunning() {
