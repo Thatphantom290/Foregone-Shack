@@ -7,6 +7,7 @@ import com.barnacle.foregone_shack.entity.release.Popim;
 import com.barnacle.foregone_shack.registry.FSModelLayers;
 import com.google.common.collect.Maps;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Axis;
 import net.minecraft.Util;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
@@ -24,6 +25,8 @@ public class PopimRenderer extends MobRenderer<Popim, PopimModel> {
                         ResourceLocation.fromNamespaceAndPath(ForegoneShack.MOD_ID, "textures/entity/popim/popim_orange.png"));
                 map.put(PopimVariant.BLUE,
                         ResourceLocation.fromNamespaceAndPath(ForegoneShack.MOD_ID, "textures/entity/popim/popim_blue.png"));
+                map.put(PopimVariant.BLACK,
+                            ResourceLocation.fromNamespaceAndPath(ForegoneShack.MOD_ID, "textures/entity/popim/popim_black.png"));
             });
 
 
@@ -40,5 +43,14 @@ public class PopimRenderer extends MobRenderer<Popim, PopimModel> {
     @Override
     public void render(Popim entity, float entityYaw, float partialTicks, PoseStack poseStack, MultiBufferSource buffer, int packedLight) {
         super.render(entity, entityYaw, partialTicks, poseStack, buffer, packedLight);
+    }
+
+    @Override
+    protected void setupRotations(Popim entity, PoseStack poseStack, float ageInTicks, float rotationYaw, float partialTicks, float scale) {
+        super.setupRotations(entity, poseStack, ageInTicks, rotationYaw, partialTicks, scale);
+
+        if (entity.horizontalCollision || entity.onClimbable()) {
+            poseStack.mulPose(Axis.XP.rotationDegrees(90.0F));
+        }
     }
 }

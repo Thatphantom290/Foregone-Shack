@@ -20,7 +20,8 @@ public class FSItemModelProvider extends SinewItemModelProvider {
         this.generatedItem(
                 FSItems.RED_POPIM,
                 FSItems.BLUE_POPIM,
-                FSItems.ORANGE_POPIM
+                FSItems.ORANGE_POPIM,
+                FSItems.BLACK_POPIM
         );
 
         for (Item item : BuiltInRegistries.ITEM) {

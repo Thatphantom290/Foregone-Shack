@@ -1,10 +1,10 @@
 package com.barnacle.foregone_shack;
 
+import com.barnacle.foregone_shack.datagen.client.FSBlockStateProvider;
 import com.barnacle.foregone_shack.datagen.client.FSItemModelProvider;
 import com.barnacle.foregone_shack.datagen.client.FSLanguageProvider;
-import com.barnacle.foregone_shack.registry.FSCreativeModeTabs;
-import com.barnacle.foregone_shack.registry.FSEntities;
-import com.barnacle.foregone_shack.registry.FSItems;
+import com.barnacle.foregone_shack.datagen.server.FSBlockTagsProvider;
+import com.barnacle.foregone_shack.registry.*;
 import com.mojang.logging.LogUtils;
 import net.minecraft.core.HolderLookup.Provider;
 import net.minecraft.data.DataGenerator;
@@ -32,7 +32,10 @@ public class ForegoneShack {
     public ForegoneShack(IEventBus modEventBus, ModContainer modContainer) {
         FSEntities.ENTITY_TYPE.register(modEventBus);
         FSItems.ITEM.register(modEventBus);
+        FSBlocks.BLOCKS.register(modEventBus);
+        FSBlockEntities.BLOCK_ENTITIES.register(modEventBus);
         FSCreativeModeTabs.CREATIVE_MODE_TAB.register(modEventBus);
+        FSFeatures.FEATURES.register(modEventBus);
 
         modEventBus.addListener(this::dataSetup);
     }
@@ -47,6 +50,10 @@ public class ForegoneShack {
         boolean server = event.includeServer();
         boolean client = event.includeClient();
 
+        FSBlockTagsProvider blockTags = new FSBlockTagsProvider(output, provider, helper);
+        generator.addProvider(server, blockTags);
+
+        generator.addProvider(client, new FSBlockStateProvider(output, helper));
         generator.addProvider(client, new FSItemModelProvider(output, helper));
         generator.addProvider(client, new FSLanguageProvider(output));
     }

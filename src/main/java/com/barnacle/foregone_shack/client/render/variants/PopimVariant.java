@@ -7,7 +7,8 @@ public enum PopimVariant {
 
     RED(0),
     ORANGE(1),
-    BLUE(2);
+    BLUE(2),
+    BLACK(3);
 
     private static final PopimVariant[] BY_ID = Arrays.stream(values()).sorted(
             Comparator.comparingInt(PopimVariant::getId)).toArray(PopimVariant[]::new);

@@ -16,18 +16,17 @@ public class FSCreativeModeTabs {
             DeferredRegister.create(Registries.CREATIVE_MODE_TAB, ForegoneShack.MOD_ID);
 
     public static final Supplier<CreativeModeTab> FOREGONE_SHACK_TAB = CREATIVE_MODE_TAB.register("foregone_shack_tab",
-            () -> CreativeModeTab.builder().icon(() -> {
-                        long cycle = (System.currentTimeMillis() / 1000) % 3;
-                        if (cycle == 0) return new ItemStack(FSItems.RED_POPIM.get());
-                        if (cycle == 1) return new ItemStack(FSItems.ORANGE_POPIM.get());
-                        return new ItemStack(FSItems.BLUE_POPIM.get());
-                    })
+            () -> CreativeModeTab.builder().icon(() -> new ItemStack(FSItems.BLACK_POPIM.get()))
                     .title(Component.translatable("creativetab.foregone_shack.foregone_shack_tab"))
                     .displayItems((itemDisplayParameters, output) -> {
                         output.accept(FSItems.RED_POPIM);
                         output.accept(FSItems.ORANGE_POPIM);
                         output.accept(FSItems.BLUE_POPIM);
+                        output.accept(FSItems.BLACK_POPIM);
                         output.accept(FSItems.POPIM_SPAWN_EGG);
+                        output.accept(FSItems.POPIM_MOUND.get());
+                        output.accept(FSBlocks.POPIM_MOUND_SOIL);
+
                     }).build());
 
     public static void register(IEventBus eventBus) {

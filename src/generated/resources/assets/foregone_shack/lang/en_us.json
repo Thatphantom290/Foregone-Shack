@@ -1,5 +1,9 @@
 {
+  "block.foregone_shack.popim_mound": "Popim Mound",
+  "block.foregone_shack.popim_mound_soil": "Popim Mound Soil",
   "creativetab.foregone_shack.foregone_shack_tab": "Foregone Shack",
+  "entity.foregone_shack.popim": "Popim",
+  "item.foregone_shack.black_popim": "Black Popim",
   "item.foregone_shack.blue_popim": "Blue Popim",
   "item.foregone_shack.orange_popim": "Orange Popim",
   "item.foregone_shack.popim_spawn_egg": "Popim Spawn Egg",

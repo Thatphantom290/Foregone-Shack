@@ -1,17 +1,21 @@
 package com.barnacle.foregone_shack.entity.release;
 
 import com.barnacle.foregone_shack.client.render.variants.PopimVariant;
+import com.barnacle.foregone_shack.entity.block.PopimMoundBlockEntity;
+import com.barnacle.foregone_shack.registry.FSBlocks;
 import com.barnacle.foregone_shack.registry.FSItems;
 import net.minecraft.Util;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.*;
+import net.minecraft.world.entity.ai.navigation.PathNavigation;
+import net.minecraft.world.entity.ai.navigation.WallClimberNavigation;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.ServerLevelAccessor;
 import org.jetbrains.annotations.Nullable;
 import com.barnacle.foregone_shack.entity.base.FSMob;
@@ -28,12 +32,16 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
+import java.util.EnumSet;
+import java.util.Optional;
+
 public class Popim extends FSMob {
 
-    private static final EntityDataAccessor<Integer> VARIANT = SynchedEntityData.defineId(Popim.class, EntityDataSerializers.INT);
+    public static final EntityDataAccessor<Integer> VARIANT = SynchedEntityData.defineId(Popim.class, EntityDataSerializers.INT);
 
     public Popim(EntityType<? extends Popim> entityType, Level level) {
         super(entityType, level);
+        this.getNavigation().setCanFloat(true);
     }
 
     @Override
@@ -43,8 +51,12 @@ public class Popim extends FSMob {
 
         this.goalSelector.addGoal(2, new WaterAvoidingRandomStrollGoal(this, 1.0D));
 
-        this.goalSelector.addGoal(3, new LookAtPlayerGoal(this, Player.class, 6.0F));
-        this.goalSelector.addGoal(4, new RandomLookAroundGoal(this));
+        this.goalSelector.addGoal(3, new EnterMoundGoal(this));
+
+        this.goalSelector.addGoal(4, new LookAtPlayerGoal(this, Player.class, 6.0F));
+
+        this.goalSelector.addGoal(5, new RandomLookAroundGoal(this));
+
     }
 
     public static AttributeSupplier.Builder registerAttributes() {
@@ -60,7 +72,7 @@ public class Popim extends FSMob {
         builder.define(VARIANT, 0);
     }
 
-    private int getTypeVariant() {
+    public int getTypeVariant() {
         return this.entityData.get(VARIANT);
     }
 
@@ -68,7 +80,7 @@ public class Popim extends FSMob {
         return PopimVariant.byId(this.getTypeVariant() & 255);
     }
 
-    private void setVariant(PopimVariant variant) {
+    public void setVariant(PopimVariant variant) {
         this.entityData.set(VARIANT, variant.getId() & 255);
     }
 
@@ -116,20 +128,45 @@ public class Popim extends FSMob {
         return SoundEvents.STONE_BREAK;
     }
 
+    @Override
     public InteractionResult mobInteract(Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
-        Item item = stack.getItem();
-        if (item == Items.AIR && this.getTarget() == null) {
-            ItemStack dropStack = new ItemStack(FSItems.BLUE_POPIM.get()); new ItemStack(FSItems.ORANGE_POPIM.get()); new ItemStack(FSItems.RED_POPIM.get());
-            ItemEntity itementity = new ItemEntity(this.level(), this.getX(), this.getY() + 1.0D, this.getZ(), dropStack);
-            this.level().addFreshEntity(itementity);
-            this.discard();
-            return InteractionResult.SUCCESS;
-        } else {
-            return super.mobInteract(player, hand);
+
+        if (stack.isEmpty() && this.getTarget() == null) {
+            if (!this.level().isClientSide()) {
+                Item dropItem = switch (this.getVariant()) {
+                    case BLUE -> FSItems.BLUE_POPIM.get();
+                    case ORANGE -> FSItems.ORANGE_POPIM.get();
+                    case RED -> FSItems.RED_POPIM.get();
+                    case BLACK -> FSItems.BLACK_POPIM.get();
+                };
+
+                ItemStack dropStack = new ItemStack(dropItem);
+                ItemEntity itemEntity = new ItemEntity(this.level(), this.getX(), this.getY() + 0.5D, this.getZ(), dropStack);
+                this.level().addFreshEntity(itemEntity);
+
+                this.discard();
+            }
+
+            return InteractionResult.sidedSuccess(this.level().isClientSide());
         }
+
+        return super.mobInteract(player, hand);
     }
 
+    @Override
+    protected PathNavigation createNavigation(Level level) {
+        return new WallClimberNavigation(this, level);
+    }
+
+    @Override
+    public boolean onClimbable() {
+        return this.isBesideClimbableBlock();
+    }
+
+    public boolean isBesideClimbableBlock() {
+        return this.horizontalCollision;
+    }
     @Override
     public boolean isFood(ItemStack itemStack) {
         return false;
@@ -138,5 +175,48 @@ public class Popim extends FSMob {
     @Override
     public @Nullable AgeableMob getBreedOffspring(ServerLevel serverLevel, AgeableMob ageableMob) {
         return null;
+    }
+
+    public class EnterMoundGoal extends Goal {
+        private final Popim popim;
+        private BlockPos moundPos;
+
+        public EnterMoundGoal(Popim popim) {
+            this.popim = popim;
+            this.setFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.LOOK));
+        }
+
+        @Override
+        public boolean canUse() {
+            BlockPos pos = this.popim.blockPosition();
+            Optional<BlockPos> nearestMound = BlockPos.findClosestMatch(pos, 16, 8,
+                    p -> this.popim.level().getBlockState(p).is(FSBlocks.POPIM_MOUND.get()));
+
+            if (nearestMound.isPresent()) {
+                this.moundPos = nearestMound.get();
+                return true;
+            }
+            return false;
+        }
+
+        @Override
+        public void start() {
+            if (this.moundPos != null) {
+                this.popim.getNavigation().moveTo(moundPos.getX(), moundPos.getY(), moundPos.getZ(), 1.2D);
+            }
+        }
+
+        @Override
+        public void tick() {
+            if (this.moundPos != null) {
+                this.popim.getNavigation().moveTo(moundPos.getX(), moundPos.getY(), moundPos.getZ(), 1.2D);
+
+                if (this.popim.blockPosition().closerThan(this.moundPos, 1.5D)) {
+                    if (this.popim.level().getBlockEntity(this.moundPos) instanceof PopimMoundBlockEntity mound) {
+                        mound.tryEnterMound(this.popim);
+                    }
+                }
+            }
+        }
     }
 }

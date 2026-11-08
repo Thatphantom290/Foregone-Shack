@@ -95,9 +95,6 @@ repositories {
 
 dependencies {
     implementation "maven.modrinth:iBgzSrdT:RZyz4KvF"
-
-    localRuntime "maven.modrinth:teallib:1.3.teal"
-    compileOnly "maven.modrinth:teallib:1.3.teal"
 }
 
 tasks.withType(ProcessResources).configureEach {

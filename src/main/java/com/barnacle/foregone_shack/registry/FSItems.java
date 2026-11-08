@@ -1,11 +1,15 @@
 package com.barnacle.foregone_shack.registry;
 
 import com.barnacle.foregone_shack.ForegoneShack;
+import com.barnacle.foregone_shack.client.render.variants.PopimVariant;
+import com.barnacle.foregone_shack.item.PopimItem;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.food.FoodProperties;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.neoforged.neoforge.common.DeferredSpawnEggItem;
+import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
@@ -18,11 +22,12 @@ public class FSItems {
     public static final List<DeferredItem<? extends Item>> ITEM_TRANSLATIONS = new ArrayList<>();
 
     public static final DeferredItem<Item> POPIM_SPAWN_EGG = registerSpawnEggItem("popim", FSEntities.POPIM, 0x8b1f1f, 0xb2c329);
-    public static final DeferredItem<Item> RED_POPIM = registerItem ("red_popim", () -> new Item(foodItem(FSFoodProperties.POPIM)));
-    public static final DeferredItem<Item> BLUE_POPIM = registerItem ("blue_popim", () -> new Item(foodItem(FSFoodProperties.POPIM)));
-    public static final DeferredItem<Item> ORANGE_POPIM = registerItem ("orange_popim", () -> new Item(foodItem(FSFoodProperties.POPIM)));
+    public static final DeferredItem<Item> RED_POPIM = registerItem ("red_popim", () -> new PopimItem(foodItem(FSFoodProperties.POPIM), PopimVariant.RED));
+    public static final DeferredItem<Item> BLUE_POPIM = registerItem ("blue_popim", () -> new PopimItem(foodItem(FSFoodProperties.POPIM), PopimVariant.BLUE));
+    public static final DeferredItem<Item> ORANGE_POPIM = registerItem ("orange_popim", () -> new PopimItem(foodItem(FSFoodProperties.POPIM), PopimVariant.ORANGE));
+    public static final DeferredItem<Item> BLACK_POPIM = registerItem ("black_popim", () -> new PopimItem(foodItem(FSFoodProperties.POPIM), PopimVariant.BLACK));
 
-
+    public static final DeferredHolder<Item, BlockItem> POPIM_MOUND = ITEM.register("popim_mound", () -> new BlockItem(FSBlocks.POPIM_MOUND.get(), new Item.Properties()));
 
     private static <I extends Item> DeferredItem<I> registerItem(String name, Supplier<? extends I> supplier) {
         DeferredItem<I> item = ITEM.register(name, supplier);

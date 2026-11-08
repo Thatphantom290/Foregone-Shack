@@ -5,6 +5,7 @@ import com.platypushasnohat.sinew.client.model.entity.SinewEntityModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.*;
+import net.minecraft.util.Mth;
 
 public class PopimModel extends SinewEntityModel<Popim> {
     private final ModelPart root;
@@ -33,6 +34,5 @@ public class PopimModel extends SinewEntityModel<Popim> {
 
     @Override
     protected void setupAnimations(Popim popim, float v, float v1, float v2, float v3, float v4, float v5) {
-
     }
 }
